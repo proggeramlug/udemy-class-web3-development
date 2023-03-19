@@ -1,4 +1,13 @@
+
+var dotenv = require('dotenv')
+var dotenvExpand = require('dotenv-expand')
+var myEnv = dotenv.config()
+dotenvExpand.expand(myEnv)
 const hre = require("hardhat");
+
+const { API_URL } = process.env;
+const { createAlchemyWeb3 } = require("@alch/alchemy-web3");
+const web3 = createAlchemyWeb3(API_URL);
 
 async function main() {
   const UdemyToken = await hre.ethers.getContractFactory("UdemyToken");
@@ -8,7 +17,7 @@ async function main() {
   await token.deployed();
 
   console.log(
-    `deployed to ${fiatToCrypto.address}`
+    `deployed to ${token.address}`
   );
 }
 
