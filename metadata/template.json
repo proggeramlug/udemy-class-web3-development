@@ -1,0 +1,12 @@
+{
+    "name": "#0",
+    "description": "UNFT",
+    "external_url": "https://www.udemy.com/",
+    "image": "ipfs://QmaRR9CSHacA2EJEygxF3co7Q2wzMqTvWNMmwA8M9f3CAG",
+    "attributes": [
+        {
+            "trait_type": "Type",
+            "value": "Something"
+        }
+    ]
+}

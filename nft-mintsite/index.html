@@ -1,0 +1,137 @@
+<!doctype html>
+<html class="no-js" lang="en-US">
+
+<head>
+	<title>Mint</title>
+	<script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+</head>
+
+<body>
+	<h1>Mint NFT</h1>
+
+	<div id="res"></div>
+	<button onclick="mint();">Mint</button>
+	<br />
+	<script>
+		var adr = "";
+
+		const tokenContractAddress = "0xeB614377039C4CEFE4c3d2C9BFc29C961D295c75";
+		const tokenABI = [{
+      "inputs": [],
+      "name": "mintToken",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    }];
+		const web3 = new Web3();
+		
+
+
+		async function enableMM() {
+			if (window.ethereum) {
+				try {
+					await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+					adr = window.ethereum.selectedAddress;
+					window.contract = await new web3.eth.Contract(tokenABI, tokenContractAddress);
+					switchNetworks();
+				} catch (error) {
+					// User denied account access...
+				}
+			}
+			// Legacy dapp browsers...
+			else if (window.web3) {
+			}
+			// Non-dapp browsers...
+			else {
+				console.log('Non-Ethereum browser detected. You should consider trying MetaMask!');
+			}
+		}
+		async function mint() {
+
+			var weiAmount = web3.utils.numberToHex(web3.utils.toWei('0.01', "ether"));
+
+			const transactionParameters = {
+				value: weiAmount,
+				gas: web3.utils.toHex(95000),
+				maxPriorityFeePerGas: null,
+				maxFeePerGas: null,
+				to: tokenContractAddress,
+				from: window.ethereum.selectedAddress,
+				data: window.contract.methods
+					.mintToken()
+					.encodeABI(),
+			};
+
+			try {
+				const txHash = await window.ethereum.request({
+					method: "eth_sendTransaction",
+					params: [transactionParameters]
+				});
+				document.getElementById('res').innerHTML = "Congratulations!<br /> Successfully minted<br /><br />Mint started, check it out here: <a href='https://sepolia.etherscan.io/tx/" + txHash + "' target='_blank'>sepolia.etherscan.io/tx/" + txHash + "</a><br />";
+			} catch (error) {
+				document.getElementById('res').innerHTML = "😥 Something went wrong: " + error.message;
+			}
+		}
+
+		async function switchNetworks() {
+			try {
+				// check if the chain to connect to is installed
+				await window.ethereum.request({
+					method: 'wallet_switchEthereumChain',
+					params: [{ chainId: '0xAA36A7' }], // chainId must be in hexadecimal numbers
+				});
+			} catch (error) {
+				// This error code indicates that the chain has not been added to MetaMask
+				// if it is not, then install it into the user MetaMask
+				if (error.code === 4902) {
+					try {
+						await window.ethereum.request({
+							method: 'wallet_addEthereumChain',
+							params: [
+								{
+									chainId: '0xAA36A7',
+									chainName: 'Sepolia test network',
+									nativeCurrency: {
+										symbol: 'SepoliaETH',
+										decimals: 18,
+										name: 'SepoliaETH'
+									},
+									blockExplorerUrls: ['https://sepolia.etherscan.io/'],
+									rpcUrls: ['https://sepolia.infura.io/v3/'],
+								},
+							],
+						});
+					} catch (addError) {
+						console.error(addError);
+					}
+				}
+				console.error(error);
+			}
+		}
+		async function checkMetamask(enable) {
+			if (window.ethereum && window.ethereum.selectedAddress && window.ethereum.selectedAddress != "") {
+				adr = window.ethereum.selectedAddress;
+				window.contract = await new web3.eth.Contract(tokenABI, tokenContractAddress);
+				await switchNetworks();
+
+			}
+			else {
+				if (enable) {
+					await enableMM();
+				}
+			}
+		}
+
+
+		window.onload = function (event) {
+			checkMetamask(false);
+			setTimeout(function () {
+				checkMetamask(true);
+			}, 1500);
+
+		};
+	</script>
+</body>
+
+</html>
